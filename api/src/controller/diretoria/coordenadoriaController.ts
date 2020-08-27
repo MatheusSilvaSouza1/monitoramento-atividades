@@ -18,13 +18,13 @@ class DiretoriaController {
     async create(req: Request, res: Response) {
 
         const { nome, sigla, desativado } = req.body
+        const existe = await Knex('diretoria').where('sigla', sigla).first()
+        if (existe) {
+            return res.status(400).json({ error: 'Está diretoria já foi cadastrada' })
+        }
+
         const trx = await Knex.transaction()
         try {
-            const existe = await trx('diretoria').where('sigla', sigla).first()
-            if (existe) {
-                await trx.rollback()
-                return res.status(400).json({ error: 'Está diretoria já foi cadastrada' })
-            }
             await Knex<IDiretoriaModel>('diretoria').insert({ nome, sigla, desativado })
             trx.commit()
             return res.status(201).send()
@@ -65,12 +65,13 @@ class DiretoriaController {
     async delete(req: Request, res: Response) {
         const { id_diretoria } = req.params
 
+        let diretoria = await Knex<IDiretoriaModel>('diretoria').where('id_diretoria', id_diretoria).first()
+        if (!diretoria) {
+            return res.status(404).json({ error: 'Diretoria não encontrada' }).send()
+        }
+        
         const trx = await Knex.transaction()
         try {
-            let diretoria = await trx<IDiretoriaModel>('diretoria').where('id_diretoria', id_diretoria).first()
-            if (!diretoria) {
-                return res.status(404).json({ error: 'Diretoria não encontrada' }).send()
-            }
 
             await trx('diretoria').where('id_diretoria', id_diretoria).del()
             trx.commit()

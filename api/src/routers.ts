@@ -24,6 +24,10 @@ routers.post('/coordenadoria/:id_coordenadoria', coordenadoria.disabled)
 
 //!responsavel
 routers.post('/responsavel', responsavel.create)
+routers.get('/responsavel', responsavel.selectAll)
+routers.put('/responsavel/:id_responsavel', responsavel.update)
+routers.delete('/responsavel/:id_responsavel', responsavel.delete)
+routers.post('/responsavel/:id_responsavel', responsavel.disabled)
 
 
 export { routers }
