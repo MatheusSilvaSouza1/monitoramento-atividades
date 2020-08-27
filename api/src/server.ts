@@ -9,5 +9,5 @@ server.use(cors())
 server.use(routers)
 
 const port = process.env.PORT || 3001
-console.log('RODANDO NA PORTA ' + port)
+console.log('😃👍 RODANDO NA PORTA ' + port)
 server.listen(port)
