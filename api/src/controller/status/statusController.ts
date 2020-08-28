@@ -1,10 +1,6 @@
 import { Request, Response } from 'express'
 import Knex from '../../database/connection'
-
-export interface IStatusModel {
-    id_status?: number
-    status: string
-}
+import { IStatusModel } from '../../models/StatusModel'
 
 class StatusController {
 
@@ -17,9 +13,9 @@ class StatusController {
         const trx = await Knex.transaction()
 
         try {
-            await trx('status').insert(status)
+            const result = await trx('status').insert(status).returning('*')
             trx.commit()
-            return res.sendStatus(201)
+            return res.status(201).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })
@@ -43,9 +39,9 @@ class StatusController {
 
         const trx = await Knex.transaction()
         try {
-            await trx('status').where('id_status', id_status).update(status)
+            const result = await trx('status').where('id_status', id_status).update(status).returning('*')
             trx.commit()
-            res.sendStatus(200)
+            res.status(200).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })

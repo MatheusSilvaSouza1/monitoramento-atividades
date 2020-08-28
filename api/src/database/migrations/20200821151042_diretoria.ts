@@ -7,8 +7,7 @@ export async function up(knex: Knex): Promise<void> {
             table.string('nome', 100).notNullable(),
             table.string('sigla', 15).notNullable(),
             table.boolean('desativado').defaultTo(false)
-    }),
-        knex.schema.raw('CREATE EXTENSION unaccent')
+    })
 }
 
 

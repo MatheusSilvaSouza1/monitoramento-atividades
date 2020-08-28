@@ -1,14 +1,6 @@
 import { Request, Response } from 'express'
 import Knex from '../../database/connection'
-
-export interface IResponsavelModel {
-    id_responsavel?: number
-    nome: string
-    login: string
-    senha: string
-    desativado: boolean
-    fk_id_coordenadoria: number
-}
+import { IResponsavelModel } from '../../models/ResponsavelModel'
 
 class ResponsavelController {
 
@@ -22,9 +14,9 @@ class ResponsavelController {
 
         const trx = await Knex.transaction()
         try {
-            await trx('responsavel').insert(responsavel)
+            const result = await trx('responsavel').insert(responsavel).returning('*')
             trx.commit()
-            return res.status(201).send()
+            return res.status(201).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })
@@ -54,9 +46,9 @@ class ResponsavelController {
 
         const trx = await Knex.transaction()
         try {
-            await trx('responsavel').update(responsavel).where('id_responsavel', id_responsavel)
+            const result = await trx('responsavel').update(responsavel).where('id_responsavel', id_responsavel).returning('*')
             trx.commit()
-            res.sendStatus(200)
+            res.status(200).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })

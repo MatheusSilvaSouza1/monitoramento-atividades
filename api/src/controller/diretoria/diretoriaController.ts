@@ -1,17 +1,6 @@
 import { Request, Response } from 'express'
 import Knex from '../../database/connection'
-
-export interface IDiretoriaModel {
-    id_diretoria?: number
-    nome: string
-    sigla: string
-    desativado?: boolean
-}
-
-export interface IDiretoria {
-    diretoria: IDiretoriaModel
-}
-
+import { IDiretoriaModel } from '../../models/DiretoriaModel'
 
 class DiretoriaController {
 
@@ -25,9 +14,9 @@ class DiretoriaController {
 
         const trx = await Knex.transaction()
         try {
-            await Knex<IDiretoriaModel>('diretoria').insert({ nome, sigla, desativado })
+            const result = await Knex<IDiretoriaModel>('diretoria').insert({ nome, sigla, desativado }).returning('*')
             trx.commit()
-            return res.status(201).send()
+            return res.status(201).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })
@@ -50,12 +39,12 @@ class DiretoriaController {
                 return res.status(404).json({ error: 'Diretoria não encontrada' }).send()
             }
 
-            const diretoriaUpdate = await trx<IDiretoriaModel>('diretoria').update(diretoria).where('id_diretoria', parseInt(id_diretoria))
-            if (!diretoriaUpdate) {
-                return res.status(404).json({ error: 'Error inesperado' })
-            }
+            const diretoriaUpdate = await trx<IDiretoriaModel>('diretoria')
+                .update(diretoria)
+                .where('id_diretoria', parseInt(id_diretoria))
+                .returning('*')
             trx.commit()
-            return res.sendStatus(200).send()
+            return res.status(200).json(diretoriaUpdate).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })
@@ -69,7 +58,7 @@ class DiretoriaController {
         if (!diretoria) {
             return res.status(404).json({ error: 'Diretoria não encontrada' }).send()
         }
-        
+
         const trx = await Knex.transaction()
         try {
 

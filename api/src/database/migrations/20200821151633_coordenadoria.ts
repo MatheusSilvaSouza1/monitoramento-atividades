@@ -6,7 +6,7 @@ export async function up(knex: Knex): Promise<void> {
         table.string('nome', 100).notNullable(),
         table.string('sigla', 15).notNullable(),
         table.boolean('desativado').defaultTo(false),
-        table.integer('fk_id_diretoria').references('id_diretoria').inTable('diretoria')
+        table.integer('fk_id_diretoria').references('id_diretoria').inTable('diretoria').notNullable()
     })
 }
 

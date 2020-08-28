@@ -1,14 +1,20 @@
 import { Router } from 'express'
-import { DiretoriaController } from './controller/diretoria/coordenadoriaController'
+import { DiretoriaController } from './controller/diretoria/diretoriaController'
 import CoordenadoriaController from './controller/coordenadoria/coordenadoriaController'
 import ResponsavelController from './controller/responsavel/responsavelController'
 import StatusController from './controller/status/statusController'
+import AtividadeController from './controller/Atividades/atividadesController'
+import RespondeController from './controller/responde/respondeController'
+import AcaoController from './controller/acao/acaoController'
 
 const routers = Router()
 const diretoria = new DiretoriaController()
 const coordenadoria = new CoordenadoriaController()
 const responsavel = new ResponsavelController()
 const status = new StatusController()
+const atividade = new AtividadeController()
+const responde = new RespondeController
+const acao = new AcaoController()
 
 //! diretoria
 routers.post('/diretoria', diretoria.create)
@@ -36,6 +42,20 @@ routers.post('/status', status.create)
 routers.get('/status', status.selectAll)
 routers.put('/status/:id_status', status.update)
 routers.delete('/status/:id_status', status.delete)
+
+//! atividades
+routers.post('/atividade', atividade.create)
+routers.get('/atividade', atividade.selectAll)
+routers.put('/atividade/:id_atividade', atividade.update)
+routers.delete('/atividade/:id_atividade', atividade.delete)
+
+//! Responde
+routers.post('/responde', responde.create)
+routers.delete('/responde/:fk_id_responsavel/:fk_id_atividade', responde.delete)
+
+//! Acao
+routers.post('/atividade/:fk_id_atividade/acao', acao.create)
+routers.delete('/atividade/:fk_id_atividade/acao', acao.delete)
 
 
 export { routers }

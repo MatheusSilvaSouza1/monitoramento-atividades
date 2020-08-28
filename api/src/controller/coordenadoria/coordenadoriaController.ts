@@ -1,13 +1,6 @@
 import { Request, Response } from 'express'
 import Knex from '../../database/connection'
-
-export interface ICoodenadoriaModel {
-    id_coordenadoria?: number
-    nome: string
-    sigla: string
-    desativado: boolean
-    fk_id_diretoria: number
-}
+import { ICoodenadoriaModel } from '../../models/CoordenadoriaModel'
 
 export interface ICoordenadoria {
     coordenadoria: ICoodenadoriaModel
@@ -26,9 +19,9 @@ class CoordenadoriaController {
                 return res.status(400).json({ error: 'Está coordenadoria já foi cadastrada' })
             }
             console.log(coordenadoria)
-            await trx('coordenadoria').insert(coordenadoria)
+            const result = await trx('coordenadoria').insert(coordenadoria).returning('*')
             trx.commit()
-            res.sendStatus(201)
+            res.status(201).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })
@@ -37,7 +30,9 @@ class CoordenadoriaController {
     }
 
     async selectAll(req: Request, res: Response) {
-        const coordenadorias = await Knex('coordenadoria').select()
+        const coordenadorias = await Knex('coordenadoria')
+            .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
+            .select(['coordenadoria.*', 'diretoria.nome as diretoria'])
         return res.json(coordenadorias).send()
     }
 
@@ -53,9 +48,12 @@ class CoordenadoriaController {
 
         try {
             console.log(coordenadoria)
-            await trx<ICoodenadoriaModel>('coordenadoria').update(coordenadoria).where('id_coordenadoria', id_coordenadoria)
+            const result = await trx<ICoodenadoriaModel>('coordenadoria')
+                .update(coordenadoria)
+                .where('id_coordenadoria', id_coordenadoria)
+                .returning('*')
             trx.commit()
-            res.sendStatus(200)
+            res.status(200).json(result).send()
         } catch (error) {
             trx.rollback()
             return res.status(400).json({ error: `error inesperado: ${error}` })
