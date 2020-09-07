@@ -9,7 +9,7 @@ class AcaoController {
 
     async create(req: Request, res: Response) {
         const { fk_id_atividade } = req.params
-        const acao: IAcaoModel = req.body
+        let acao: IAcaoModel = req.body
 
         const existe = await Knex('acao').where('fk_id_atividade', fk_id_atividade).first()
         if (existe) {
@@ -19,6 +19,8 @@ class AcaoController {
         const trx = await Knex.transaction()
         try {
             acao.fk_id_atividade = parseInt(fk_id_atividade)
+            acao.tipo = acao.tipo.trim().toUpperCase()
+            acao.prioridade = acao.prioridade.trim().toUpperCase()
             const result = await trx('acao').insert(acao).returning('*')
             trx.commit()
             return res.status(201).json(result).send()

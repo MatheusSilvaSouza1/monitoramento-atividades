@@ -25,11 +25,20 @@ class RespondeController {
         }
     }
 
+    async selectOne(req: Request, res: Response) {
+        const { fk_id_atividade } = req.params
+        const responde = await Knex('responde')
+            .where('fk_id_atividade', fk_id_atividade)
+            .innerJoin('responsavel', 'responsavel.id_responsavel', 'responde.fk_id_responsavel')
+            .innerJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'responsavel.fk_id_coordenadoria')
+            .select('responsavel.id_responsavel', 'responsavel.nome as responsavel', 'coordenadoria.sigla as coord_sigla', 'responde.fk_id_atividade')
+        return res.json(responde)
+    }
+
     async delete(req: Request, res: Response) {
         const { fk_id_responsavel, fk_id_atividade } = req.params
         var responde = { fk_id_responsavel, fk_id_atividade }
 
-        console.log(responde)
         const existe = await Knex('responde')
             .where('fk_id_responsavel', responde.fk_id_responsavel)
             .andWhere('fk_id_atividade', responde.fk_id_atividade)

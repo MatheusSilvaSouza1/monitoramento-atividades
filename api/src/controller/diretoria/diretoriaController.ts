@@ -6,7 +6,8 @@ class DiretoriaController {
 
     async create(req: Request, res: Response) {
 
-        const { nome, sigla, desativado } = req.body
+        let { nome, sigla } = req.body
+        const desativado = false
         const existe = await Knex('diretoria').where('sigla', sigla).first()
         if (existe) {
             return res.status(400).json({ error: 'Está diretoria já foi cadastrada' })
@@ -14,6 +15,9 @@ class DiretoriaController {
 
         const trx = await Knex.transaction()
         try {
+            nome = nome.trim().toUpperCase()
+            sigla = sigla.trim().toUpperCase()
+            console.log(nome)
             const result = await Knex<IDiretoriaModel>('diretoria').insert({ nome, sigla, desativado }).returning('*')
             trx.commit()
             return res.status(201).json(result).send()
@@ -25,8 +29,17 @@ class DiretoriaController {
     }
 
     async selectAll(req: Request, res: Response) {
-        const diretorias = await Knex<IDiretoriaModel>('diretoria').select()
+        const diretorias = await Knex<IDiretoriaModel>('diretoria').select().orderBy('id_diretoria','nome')
         return res.json(diretorias)
+    }
+
+    async selectOne(req: Request, res: Response) {
+        const { id_diretoria } = req.params
+        const diretoria = await Knex('diretoria').where('id_diretoria', id_diretoria).first()
+        if(!diretoria){
+            return res.status(400).json({ error: `Diretoria não encontrada` })
+        }
+        return res.json(diretoria)
     }
 
     async update(req: Request, res: Response) {

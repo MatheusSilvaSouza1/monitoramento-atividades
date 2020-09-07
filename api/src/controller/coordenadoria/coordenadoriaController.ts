@@ -9,7 +9,8 @@ export interface ICoordenadoria {
 class CoordenadoriaController {
 
     async create(req: Request, res: Response) {
-        const coordenadoria: ICoodenadoriaModel = req.body
+        let coordenadoria: ICoodenadoriaModel = req.body
+        console.log(coordenadoria)
         const trx = await Knex.transaction()
 
         try {
@@ -18,7 +19,8 @@ class CoordenadoriaController {
                 await trx.rollback()
                 return res.status(400).json({ error: 'Está coordenadoria já foi cadastrada' })
             }
-            console.log(coordenadoria)
+            coordenadoria.nome = coordenadoria.nome.trim().toUpperCase()
+            coordenadoria.sigla = coordenadoria.sigla.trim().toUpperCase()
             const result = await trx('coordenadoria').insert(coordenadoria).returning('*')
             trx.commit()
             res.status(201).json(result).send()
@@ -30,15 +32,31 @@ class CoordenadoriaController {
     }
 
     async selectAll(req: Request, res: Response) {
-        const coordenadorias = await Knex('coordenadoria')
+        try {
+            const coordenadorias = await Knex('coordenadoria')
+                .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
+                .select(['coordenadoria.*', 'diretoria.nome as diretoria'])
+            const [count] = await Knex('coordenadoria').count()
+
+            res.header('X-Total-Count', count['count'] + '')
+
+            return res.json(coordenadorias)
+        } catch (error) {
+            return res.sendStatus(404)
+        }
+    }
+
+    async selectOne(req: Request, res: Response) {
+        const { id_coordenadoria } = req.params
+        const coordenadorias = await Knex('coordenadoria').where('id_coordenadoria', id_coordenadoria)
             .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
-            .select(['coordenadoria.*', 'diretoria.nome as diretoria'])
-        return res.json(coordenadorias).send()
+            .select(['coordenadoria.*', 'diretoria.nome as diretoria']).first()
+        return res.json(coordenadorias)
     }
 
     async update(req: Request, res: Response) {
         const { id_coordenadoria } = req.params
-        const coordenadoria: ICoodenadoriaModel = req.body
+        let coordenadoria: ICoodenadoriaModel = req.body
         const existe = await Knex<ICoodenadoriaModel>('coordenadoria').where('id_coordenadoria', id_coordenadoria).first()
         if (!existe) {
             return res.status(400).json({ error: 'Coordenadoria não encontrada' })
@@ -47,7 +65,8 @@ class CoordenadoriaController {
         const trx = await Knex.transaction()
 
         try {
-            console.log(coordenadoria)
+            coordenadoria.nome = coordenadoria.nome.trim().toUpperCase()
+            coordenadoria.sigla = coordenadoria.sigla.trim().toUpperCase()
             const result = await trx<ICoodenadoriaModel>('coordenadoria')
                 .update(coordenadoria)
                 .where('id_coordenadoria', id_coordenadoria)
