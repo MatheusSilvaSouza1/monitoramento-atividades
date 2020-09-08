@@ -20,7 +20,6 @@ class AcaoController {
         try {
             acao.fk_id_atividade = parseInt(fk_id_atividade)
             acao.tipo = acao.tipo.trim().toUpperCase()
-            acao.prioridade = acao.prioridade.trim().toUpperCase()
             const result = await trx('acao').insert(acao).returning('*')
             trx.commit()
             return res.status(201).json(result).send()
