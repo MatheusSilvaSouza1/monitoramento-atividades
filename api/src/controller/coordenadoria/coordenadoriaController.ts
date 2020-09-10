@@ -10,7 +10,6 @@ class CoordenadoriaController {
 
     async create(req: Request, res: Response) {
         let coordenadoria: ICoodenadoriaModel = req.body
-        console.log(coordenadoria)
         const trx = await Knex.transaction()
 
         try {
@@ -32,15 +31,29 @@ class CoordenadoriaController {
     }
 
     async selectAll(req: Request, res: Response) {
+        var { desativado } = req.query
         try {
-            const coordenadorias = await Knex('coordenadoria')
-                .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
-                .select(['coordenadoria.*', 'diretoria.nome as diretoria'])
-            const [count] = await Knex('coordenadoria').count()
+            if (desativado !== undefined) {
+                desativado = desativado.toString()
+                const coordenadorias = await Knex('coordenadoria')
+                    .where('coordenadoria.desativado', desativado)
+                    .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
+                    .select(['coordenadoria.*', 'diretoria.nome as diretoria'])
+                    .orderBy('coordenadoria.nome')
+                const [count] = await Knex('coordenadoria').count()
+                res.header('X-Total-Count', count['count'] + '')
 
-            res.header('X-Total-Count', count['count'] + '')
+                return res.json(coordenadorias)
+            } else {
+                const coordenadorias = await Knex('coordenadoria')
+                    .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
+                    .select(['coordenadoria.*', 'diretoria.nome as diretoria'])
+                    .orderBy('coordenadoria.nome')
+                const [count] = await Knex('coordenadoria').count()
+                res.header('X-Total-Count', count['count'] + '')
 
-            return res.json(coordenadorias)
+                return res.json(coordenadorias)
+            }
         } catch (error) {
             return res.sendStatus(404)
         }

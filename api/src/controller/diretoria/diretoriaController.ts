@@ -29,8 +29,15 @@ class DiretoriaController {
     }
 
     async selectAll(req: Request, res: Response) {
-        const diretorias = await Knex<IDiretoriaModel>('diretoria').select().orderBy('id_diretoria','nome')
-        return res.json(diretorias)
+        var { desativado} = req.query
+        if (desativado !== undefined) {
+            desativado = desativado.toString()
+            const diretorias = await Knex<IDiretoriaModel>('diretoria').where('desativado', desativado).select().orderBy('id_diretoria','nome')
+            return res.json(diretorias)
+        }else{
+            const diretorias = await Knex<IDiretoriaModel>('diretoria').select().orderBy('id_diretoria','nome')
+            return res.json(diretorias)
+        }
     }
 
     async selectOne(req: Request, res: Response) {

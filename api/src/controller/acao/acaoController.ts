@@ -29,6 +29,26 @@ class AcaoController {
         }
     }
 
+    async update(req: Request, res: Response) {
+        const { fk_id_atividade, id_acao } = req.params
+        const acao: IAcaoModel = req.body
+        const existe = await Knex('acao').where('fk_id_atividade', fk_id_atividade).first()
+        if (!existe) {
+            return res.status(404).json({ error: 'Ação não encontrada' }).send()
+        }
+
+        const trx = await Knex.transaction()
+        try {
+            acao.fk_id_atividade = parseInt(fk_id_atividade)
+            acao.tipo = acao.tipo.trim().toUpperCase()
+            const result = await trx('acao').where('id_acao', parseInt(id_acao)).update(acao).returning('*')
+            trx.commit()
+            return res.status(200).json(result).send()
+        } catch (error) {
+            trx.rollback()
+            return res.status(400).json({ error: `error inesperado: ${error}` })
+        }
+    }
 
     async delete(req: Request, res: Response) {
         const { fk_id_atividade } = req.params
@@ -40,7 +60,7 @@ class AcaoController {
 
         const trx = await Knex.transaction()
         try {
-            
+
             const result = await trx('acao').where('fk_id_atividade', fk_id_atividade).del()
             trx.commit()
             return res.sendStatus(200)

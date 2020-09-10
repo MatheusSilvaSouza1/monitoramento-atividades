@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import Knex from '../../database/connection'
 import { IResponsavelModel } from '../../models/ResponsavelModel'
+import * as bcrypt from 'bcrypt'
 
 class ResponsavelController {
 
@@ -14,9 +15,14 @@ class ResponsavelController {
 
         const trx = await Knex.transaction()
         try {
+            const senhaHash = await bcrypt.hash(responsavel.senha, 8)
+            responsavel.senha = senhaHash
             responsavel.nome = responsavel.nome.trim().toUpperCase()
+            responsavel.email = responsavel.email.trim()
+            responsavel.login = responsavel.login.trim()
             const result = await trx('responsavel').insert(responsavel).returning('*')
             trx.commit()
+            delete result[0].senha 
             return res.status(201).json(result).send()
         } catch (error) {
             trx.rollback()
@@ -29,7 +35,7 @@ class ResponsavelController {
             .leftJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'responsavel.fk_id_coordenadoria')
             .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
             .select([
-                'responsavel.id_responsavel', 'responsavel.nome', 'responsavel.login', 'responsavel.desativado as resp_desativado',
+                'responsavel.id_responsavel', 'responsavel.nome', 'responsavel.email', 'responsavel.login', 'responsavel.desativado as resp_desativado',
                 'coordenadoria.id_coordenadoria', 'coordenadoria.nome as coordenadoria', 'coordenadoria.sigla as coord_sigla', 'coordenadoria.desativado as coord_dasativado',
                 'diretoria.id_diretoria', 'diretoria.nome as diretoria', 'diretoria.sigla as dir_sigla', 'diretoria.desativado as dir_dasativado'
             ])
@@ -84,7 +90,7 @@ class ResponsavelController {
             res.sendStatus(200)
         } catch (error) {
             trx.rollback()
-            return res.status(400).json({ error: `error inesperado: ${error}` })
+            return res.status(400).json({ error: error })
         }
     }
 

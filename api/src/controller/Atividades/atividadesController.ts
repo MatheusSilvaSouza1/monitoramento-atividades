@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import Knex from '../../database/connection'
 import { IAtividadeModel } from '../../models/AtividadeModel'
-import { format } from '../../util/TratamentoDeDatas'
+
 
 interface IResponde {
     id_responsavel: number; responsavel: string;
@@ -45,7 +45,7 @@ class AtividadeController {
     async selectAll(req: Request, res: Response) {
         try {
             const atividades: IAtividade[] = await Knex<IAtividadeModel>('atividade').select('')
-                .innerJoin('status', 'status.id_status', 'atividade.fk_id_status')
+                .innerJoin('status', 'status.id_status', 'atividade.fk_id_status').orderBy('atividade.id_atividade', "desc")
 
             for (let index = 0; index < atividades.length; index++) {
                 const responsaveis = await Knex<IAtividadeModel>('responde').where('fk_id_atividade', atividades[index].id_atividade)
@@ -63,8 +63,21 @@ class AtividadeController {
         const { id_atividade } = req.params
 
         try {
-            var atividade: IAtividade = await Knex<IAtividadeModel>('atividade').where('id_atividade', id_atividade).select('').first()
-            atividade.responsaveis = await Knex<IAtividadeModel>('responde').where('fk_id_atividade', id_atividade)
+            // knex('quote').select(['quote.*', knex.raw('to_json(originator.*) as originator')]).where({'quote.id': quoteId}).join('originator', {'originator.id': 'originator_id'})
+            var atividade = await Knex('atividade')
+                .where('id_atividade', id_atividade)
+                .innerJoin('status', 'status.id_status', 'atividade.fk_id_status')
+                .leftJoin('acao', 'acao.fk_id_atividade', 'atividade.id_atividade')
+                .leftJoin('prioridade', 'acao.fk_id_prioridade', 'prioridade.id_prioridade')
+                .leftJoin('diretoria', 'acao.fk_id_diretoria', 'diretoria.id_diretoria')
+                .select('atividade.id_atividade', 'atividade.objetivo', 'atividade.inicio_previsto', 'atividade.termino_previsto', 'atividade.target', 'atividade.rotina',
+                    'status.id_status', 'status.status',
+                    'acao.id_acao', 'acao.tipo',
+                    'diretoria.id_diretoria', 'diretoria.nome as diretoria', 'diretoria.sigla',
+                    'prioridade.id_prioridade', 'prioridade.prioridade')
+                .first()
+            
+                atividade.responsaveis = await Knex<IAtividadeModel>('responde').where('fk_id_atividade', id_atividade)
                 .innerJoin('responsavel', 'responde.fk_id_responsavel', 'responsavel.id_responsavel')
                 .innerJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'responsavel.fk_id_coordenadoria')
                 .select('responsavel.id_responsavel', 'responsavel.nome as responsavel', 'coordenadoria.sigla as coord_sigla')
@@ -77,15 +90,21 @@ class AtividadeController {
     async update(req: Request, res: Response) {
         const { id_atividade } = req.params
         const atividade: IAtividadeModel = req.body
-
         const existe = await Knex('atividade').where('id_atividade', id_atividade).first()
         if (!existe) {
             return res.status(400).json({ error: 'Atividae não foi encontrada' })
         }
 
+        if (atividade.inicio_previsto === ''){
+            await delete atividade.inicio_previsto
+        }
+        if (atividade.termino_previsto === ''){
+            await delete atividade.termino_previsto
+        }
+
         const trx = await Knex.transaction()
         try {
-            const result = await trx('atividade').where('id_atividade', id_atividade).update(atividade)
+            const result = await trx('atividade').where('id_atividade', id_atividade).update(atividade).returning('*')
             trx.commit()
             return res.status(201).json(result).send()
         } catch (error) {

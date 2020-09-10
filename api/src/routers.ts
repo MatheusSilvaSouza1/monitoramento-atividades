@@ -7,8 +7,11 @@ import AtividadeController from './controller/Atividades/atividadesController'
 import RespondeController from './controller/responde/respondeController'
 import AcaoController from './controller/acao/acaoController'
 import PrioridadeController from './controller/prioridade/prioridadeController'
+import Login from './controller/Login/LoginController'
+import { auth } from './middlewares/auth'
 
 const routers = Router()
+const login = new Login()
 const diretoria = new DiretoriaController()
 const coordenadoria = new CoordenadoriaController()
 const responsavel = new ResponsavelController()
@@ -17,6 +20,12 @@ const atividade = new AtividadeController()
 const responde = new RespondeController()
 const prioridade = new PrioridadeController()
 const acao = new AcaoController()
+
+//! autenticacao
+routers.post('/login', login.logar)
+
+//! obriga as rotas abaixo a pedir o token
+routers.use(auth)
 
 //! diretoria
 routers.post('/diretoria', diretoria.create)
@@ -68,6 +77,7 @@ routers.delete('/prioridade/:id_prioridade', prioridade.delete)
 
 //! Acao
 routers.post('/atividade/:fk_id_atividade/acao', acao.create)
+routers.put('/atividade/:fk_id_atividade/acao/:id_acao', acao.update)
 routers.delete('/atividade/:fk_id_atividade/acao', acao.delete)
 
 
