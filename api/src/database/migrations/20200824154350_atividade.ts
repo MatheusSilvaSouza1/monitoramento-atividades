@@ -1,6 +1,5 @@
 import * as Knex from "knex";
 
-
 export async function up(knex: Knex): Promise<void> {
     return knex.schema.createTable('atividade', table => {
         table.increments('id_atividade').primary(),
@@ -10,6 +9,7 @@ export async function up(knex: Knex): Promise<void> {
             table.boolean('target').notNullable(),
             table.boolean('rotina').comment('define se a atividade e rotineira').defaultTo(false),
             table.boolean('dasativado').defaultTo(false).notNullable(),
+            table.integer('fk_id_coordenadoria').references('id_coordenadoria').inTable('coordenadoria').notNullable(),
             table.integer('fk_id_status').references('id_status').inTable('status').notNullable()
     })
 }

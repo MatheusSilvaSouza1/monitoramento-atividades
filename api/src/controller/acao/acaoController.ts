@@ -29,6 +29,16 @@ class AcaoController {
         }
     }
 
+    async select(req: Request, res: Response) {
+        const { fk_id_atividade } = req.params
+        
+        const response = await Knex('acao')
+            .where('fk_id_atividade', fk_id_atividade)
+            .select()
+            
+        return res.json(response)
+    }
+
     async update(req: Request, res: Response) {
         const { fk_id_atividade, id_acao } = req.params
         const acao: IAcaoModel = req.body

@@ -25,7 +25,7 @@ const acao = new AcaoController()
 routers.post('/login', login.logar)
 
 //! obriga as rotas abaixo a pedir o token
-routers.use(auth)
+// routers.use(auth)
 
 //! diretoria
 routers.post('/diretoria', diretoria.create)
@@ -77,6 +77,7 @@ routers.delete('/prioridade/:id_prioridade', prioridade.delete)
 
 //! Acao
 routers.post('/atividade/:fk_id_atividade/acao', acao.create)
+routers.get('/atividade/:fk_id_atividade/acao', acao.select)
 routers.put('/atividade/:fk_id_atividade/acao/:id_acao', acao.update)
 routers.delete('/atividade/:fk_id_atividade/acao', acao.delete)
 

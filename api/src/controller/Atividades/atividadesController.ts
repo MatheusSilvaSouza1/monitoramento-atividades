@@ -43,14 +43,30 @@ class AtividadeController {
     }
 
     async selectAll(req: Request, res: Response) {
+        const query = req.query
+        var fk_id_responsavel = 0
+        if (query.id_responsavel) {
+            fk_id_responsavel = parseInt(query.id_responsavel.toString())
+        }
+
         try {
-            const atividades: IAtividade[] = await Knex<IAtividadeModel>('atividade').select('')
-                .innerJoin('status', 'status.id_status', 'atividade.fk_id_status').orderBy('atividade.id_atividade', "desc")
+            const atividades: IAtividade[] = await
+                Knex<IAtividadeModel>('atividade', {only: true})
+                    .innerJoin('status', 'status.id_status', 'atividade.fk_id_status')
+                    .innerJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'atividade.fk_id_coordenadoria')
+                    .innerJoin('responde', 'responde.fk_id_atividade', 'atividade.id_atividade')
+                    .where('fk_id_responsavel', fk_id_responsavel)
+                    .select(['atividade.*', 'status.status', "coordenadoria.id_coordenadoria", "coordenadoria.nome as coordenadoria", "coordenadoria.sigla"])
+                    .orderBy('atividade.id_atividade', "desc")
 
             for (let index = 0; index < atividades.length; index++) {
-                const responsaveis = await Knex<IAtividadeModel>('responde').where('fk_id_atividade', atividades[index].id_atividade)
+                const responsaveis = await Knex<IAtividadeModel>('responde')
                     .innerJoin('responsavel', 'responde.fk_id_responsavel', 'responsavel.id_responsavel')
-                    .select('responsavel.id_responsavel', 'responsavel.nome as responsavel')
+                    .where('fk_id_atividade', atividades[index].id_atividade)
+                    .select(
+                        'responsavel.id_responsavel', 'responsavel.nome as responsavel'
+                    )
+
                 atividades[index].responsaveis = responsaveis
             }
             return res.json(atividades)
@@ -67,17 +83,19 @@ class AtividadeController {
             var atividade = await Knex('atividade')
                 .where('id_atividade', id_atividade)
                 .innerJoin('status', 'status.id_status', 'atividade.fk_id_status')
+                .innerJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'atividade.fk_id_coordenadoria')
                 .leftJoin('acao', 'acao.fk_id_atividade', 'atividade.id_atividade')
                 .leftJoin('prioridade', 'acao.fk_id_prioridade', 'prioridade.id_prioridade')
                 .leftJoin('diretoria', 'acao.fk_id_diretoria', 'diretoria.id_diretoria')
                 .select('atividade.id_atividade', 'atividade.objetivo', 'atividade.inicio_previsto', 'atividade.termino_previsto', 'atividade.target', 'atividade.rotina',
                     'status.id_status', 'status.status',
                     'acao.id_acao', 'acao.tipo',
+                    'coordenadoria.id_coordenadoria', 'coordenadoria.nome as coordenadoria',
                     'diretoria.id_diretoria', 'diretoria.nome as diretoria', 'diretoria.sigla',
                     'prioridade.id_prioridade', 'prioridade.prioridade')
                 .first()
-            
-                atividade.responsaveis = await Knex<IAtividadeModel>('responde').where('fk_id_atividade', id_atividade)
+
+            atividade.responsaveis = await Knex<IAtividadeModel>('responde').where('fk_id_atividade', id_atividade)
                 .innerJoin('responsavel', 'responde.fk_id_responsavel', 'responsavel.id_responsavel')
                 .innerJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'responsavel.fk_id_coordenadoria')
                 .select('responsavel.id_responsavel', 'responsavel.nome as responsavel', 'coordenadoria.sigla as coord_sigla')
@@ -95,10 +113,10 @@ class AtividadeController {
             return res.status(400).json({ error: 'Atividae não foi encontrada' })
         }
 
-        if (atividade.inicio_previsto === ''){
+        if (atividade.inicio_previsto === '') {
             await delete atividade.inicio_previsto
         }
-        if (atividade.termino_previsto === ''){
+        if (atividade.termino_previsto === '') {
             await delete atividade.termino_previsto
         }
 
