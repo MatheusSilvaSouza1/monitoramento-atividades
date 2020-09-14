@@ -51,7 +51,7 @@ class AtividadeController {
 
         try {
             const atividades: IAtividade[] = await
-                Knex<IAtividadeModel>('atividade', {only: true})
+                Knex<IAtividadeModel>('atividade', { only: true })
                     .innerJoin('status', 'status.id_status', 'atividade.fk_id_status')
                     .innerJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'atividade.fk_id_coordenadoria')
                     .innerJoin('responde', 'responde.fk_id_atividade', 'atividade.id_atividade')
@@ -69,6 +69,7 @@ class AtividadeController {
 
                 atividades[index].responsaveis = responsaveis
             }
+            res.header('X-Total-Count', atividades.length + '')
             return res.json(atividades)
         } catch (error) {
             return res.status(404).json({ error: `error inesperado: ${error}` })
@@ -120,6 +121,9 @@ class AtividadeController {
             await delete atividade.termino_previsto
         }
 
+        if (existe.target === true && atividade.target === false) {
+            
+        }
         const trx = await Knex.transaction()
         try {
             const result = await trx('atividade').where('id_atividade', id_atividade).update(atividade).returning('*')

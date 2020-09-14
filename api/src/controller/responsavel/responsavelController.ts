@@ -10,7 +10,7 @@ class ResponsavelController {
 
         const existe = await Knex<IResponsavelModel>('responsavel').where('login', responsavel.login).first()
         if (existe) {
-            return res.status(400).json({ error: 'Este responsavel já foi cadastrada' })
+            return res.status(400).json({ error: 'Este responsavel já foi cadastrado' })
         }
 
         const trx = await Knex.transaction()
@@ -31,7 +31,7 @@ class ResponsavelController {
     }
 
     async selectAll(req: Request, res: Response) {
-        const responsaveis = await Knex<IResponsavelModel>('responsavel')
+        const responsaveis = await Knex<IResponsavelModel>('responsavel').whereNot('responsavel.login', 'admin')
             .leftJoin('coordenadoria', 'coordenadoria.id_coordenadoria', 'responsavel.fk_id_coordenadoria')
             .innerJoin('diretoria', 'diretoria.id_diretoria', 'coordenadoria.fk_id_diretoria')
             .select([

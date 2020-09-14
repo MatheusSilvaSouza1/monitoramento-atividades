@@ -17,7 +17,6 @@ class DiretoriaController {
         try {
             nome = nome.trim().toUpperCase()
             sigla = sigla.trim().toUpperCase()
-            console.log(nome)
             const result = await Knex<IDiretoriaModel>('diretoria').insert({ nome, sigla, desativado }).returning('*')
             trx.commit()
             return res.status(201).json(result).send()

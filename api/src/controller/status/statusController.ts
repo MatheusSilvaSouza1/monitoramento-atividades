@@ -13,6 +13,7 @@ class StatusController {
         const trx = await Knex.transaction()
 
         try {
+            status.status = status.status.toUpperCase() 
             const result = await trx('status').insert(status).returning('*')
             trx.commit()
             return res.status(201).json(result).send()
@@ -39,6 +40,7 @@ class StatusController {
 
         const trx = await Knex.transaction()
         try {
+            status.status = status.status.toUpperCase() 
             const result = await trx('status').where('id_status', id_status).update(status).returning('*')
             trx.commit()
             res.status(200).json(result).send()

@@ -25,7 +25,7 @@ const acao = new AcaoController()
 routers.post('/login', login.logar)
 
 //! obriga as rotas abaixo a pedir o token
-// routers.use(auth)
+routers.use(auth)
 
 //! diretoria
 routers.post('/diretoria', diretoria.create)

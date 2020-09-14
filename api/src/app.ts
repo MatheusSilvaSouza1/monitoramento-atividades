@@ -13,7 +13,7 @@ class AppController {
 
     middlewares() {
         this.app.use(express.json())
-        this.app.use(cors())
+        this.app.use(cors({ exposedHeaders: 'X-Total-Count'}))
     }
 
     routes() {
