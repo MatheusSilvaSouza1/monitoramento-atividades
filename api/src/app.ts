@@ -1,7 +1,6 @@
 import express from 'express'
 import { routers } from './routers'
 import cors from 'cors'
-// import './config/env'
 
 class AppController {
     public app = express()

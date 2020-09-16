@@ -18,7 +18,7 @@ class Login {
         }
 
         if (await bcrypt.compare(senha, responsavel.senha)) {
-            const token = jwt.sign({ id: responsavel.id_responsavel }, process.env.APP_SECRET as string, {
+            const token = await jwt.sign({ id: responsavel.id_responsavel }, '8e2bf4be4cbe18dea32f029aa81dcb9e' || process.env.APP_SECRET as string, {
                 expiresIn: '1d'
             })
             const data = {

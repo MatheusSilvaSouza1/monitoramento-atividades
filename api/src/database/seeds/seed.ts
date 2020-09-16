@@ -12,9 +12,9 @@ export async function seed(knex: knex) {
     ])
     await knex('status').insert([
         { status: 'A INICIAR' },
-        { status: 'CONCLUÍDA' },
         { status: 'EM EXECUÇÃO' },
-        { status: 'SUSPENSA' }
+        { status: 'SUSPENSA' },
+        { status: 'CONCLUÍDA' }
     ])
     await knex('prioridade').insert([
         { prioridade: 'EMERGENCIAL ESTRATÉGICO' },

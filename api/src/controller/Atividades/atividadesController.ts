@@ -23,10 +23,10 @@ class AtividadeController {
     async create(req: Request, res: Response) {
         let atividade: IAtividadeModel = req.body
 
-        const existe = await Knex('atividade').whereRaw(`unaccent(objetivo)  ilike  unaccent('%${atividade.objetivo}%')`).first()
-        if (existe) {
-            return res.status(400).json({ error: 'Esta atividae já foi cadastrada' })
-        }
+        // const existe = await Knex('atividade').whereRaw(`unaccent(objetivo)  ilike  unaccent('%${atividade.objetivo}%')`).first()
+        // if (existe) {
+        //     return res.status(400).json({ error: 'Esta atividae já foi cadastrada' })
+        // }
 
         const trx = await Knex.transaction()
         try {
@@ -126,6 +126,9 @@ class AtividadeController {
         }
         const trx = await Knex.transaction()
         try {
+            atividade.objetivo = atividade.objetivo.trim().toUpperCase()
+            atividade.inicio_previsto = atividade.inicio_previsto == "" ? undefined : atividade.inicio_previsto
+            atividade.termino_previsto = atividade.termino_previsto == "" ? undefined : atividade.termino_previsto
             const result = await trx('atividade').where('id_atividade', id_atividade).update(atividade).returning('*')
             trx.commit()
             return res.status(201).json(result).send()

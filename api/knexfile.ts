@@ -3,10 +3,10 @@ import path from 'path'
 export default {
     client: 'pg',
     connection: {
-        host: '127.0.0.1',
-        user: 'postgres',
-        password: '12345678',
-        database: 'monitoramento_atividades'
+        host: process.env.HOST || '127.0.0.1',
+        user: process.env.USER_NAME || 'postgres',
+        password: process.env.PASSWORD || '12345678',
+        database: process.env.DB || 'monitoramento_atividades'
     },
     migrations: {
         directory: path.resolve(__dirname, 'src', 'database', 'migrations')

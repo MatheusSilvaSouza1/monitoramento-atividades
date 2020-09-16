@@ -57,7 +57,8 @@ class DiretoriaController {
             if (!existe) {
                 return res.status(404).json({ error: 'Diretoria não encontrada' }).send()
             }
-
+            diretoria.nome = diretoria.nome.trim().toUpperCase()
+            diretoria.sigla = diretoria.sigla.trim().toUpperCase()
             const diretoriaUpdate = await trx<IDiretoriaModel>('diretoria')
                 .update(diretoria)
                 .where('id_diretoria', parseInt(id_diretoria))

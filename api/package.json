@@ -5,6 +5,7 @@
   "author": "Matheus Silva de Souza <51029848+MatheusSilvaSouza1@users.noreply.github.com>",
   "license": "MIT",
   "scripts": {
+    "product": "node -r dotenv/config build/src/server.js",
     "dev": "ts-node-dev --ignore-watch node_modules src/server.ts"
   },
   "dependencies": {

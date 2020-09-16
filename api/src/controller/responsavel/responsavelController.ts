@@ -66,6 +66,10 @@ class ResponsavelController {
 
         const trx = await Knex.transaction()
         try {
+            if (await !!bcrypt.compare(responsavel.senha, existe.senha)){
+                const senhaHash = await bcrypt.hash(responsavel.senha, 8)
+                responsavel.senha = senhaHash    
+            }
             const result = await trx('responsavel').update(responsavel).where('id_responsavel', id_responsavel).returning('*')
             trx.commit()
             res.status(200).json(result).send()

@@ -9,6 +9,7 @@ export async function up(knex: Knex): Promise<void> {
             table.boolean('target').notNullable(),
             table.boolean('rotina').comment('define se a atividade e rotineira').defaultTo(false),
             table.boolean('dasativado').defaultTo(false).notNullable(),
+            table.timestamp('created_at', { precision: 6 }).defaultTo(knex.fn.now(6)),
             table.integer('fk_id_coordenadoria').references('id_coordenadoria').inTable('coordenadoria').notNullable(),
             table.integer('fk_id_status').references('id_status').inTable('status').notNullable()
     })
